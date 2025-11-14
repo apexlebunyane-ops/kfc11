@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFC Investment Platform</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --kfc-red: #E4002B;
+            --kfc-dark-red: #8B0000;
+            --kfc-white: #FFFFFF;
+            --kfc-black: #000000;
+            --kfc-gray: #F5F5F5;
+            --kfc-dark-gray: #333333;
+            --kfc-gold: #FFD700;
+            --kfc-light-gray: #E0E0E0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--kfc-gray);
+            color: var(--kfc-dark-gray);
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--kfc-white);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 70px;
+        }
+        
+        /* Login Page Styles */
+        .login-container {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 450px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background-color: #8B0000;
+            color: white;
+            padding: 24px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .kfc-logo {
+            font-size: 42px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .kfc-sublogo {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .form-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .form-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+        
+        .tab.active {
+            color: #8B0000;
+            border-bottom: 3px solid #8B0000;
+        }
+        
+        .form-container {
+            padding: 30px;
+        }
+        
+        .form {
+            display: none;
+        }
+        
+        .form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            border-color: #8B0000;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
+        }
+        
+        .phone-input {
+            display: flex;
+        }
+        
+        .country-code {
+            width: 80px;
+            padding: 14px 12px;
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .phone-number {
+            flex: 1;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 42px;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #A52A2A;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+        }
+        
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .form-footer a {
+            color: #8B0000;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .password-strength {
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-weak {
+            background-color: #ff4757;
+            width: 33%;
+        }
+        
+        .strength-medium {
+            background-color: #ffa502;
+            width: 66%;
+        }
+        
+        .strength-strong {
+            background-color: #2ed573;
+            width: 100%;
+        }
+        
+        .kfc-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background-color: white;
+            color: #8B0000;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .error-message {
+            color: #ff4757;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #2ed573;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #2ed573;
+        }
+        
+        .notification.error {
+            background-color: #ff4757;
+        }
+        
+        /* Dashboard Styles */
+        .header {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            padding: 15px 20px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--kfc-dark-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--kfc-white);
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--kfc-dark-red);
+            border-radius: 30px;
+            padding: 8px 15px;
+        }
+        
+        .action-btn {
+            color: var(--kfc-white);
+            font-size: 14px;
+            text-align: center;
+            flex: 1;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Banner Slider */
+        .banner-slider {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+        
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            color: var(--kfc-white);
+            position: relative;
+        }
+        
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
+        }
+        
+        .slide-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .slide-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .slide-description {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .slider-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 3;
+        }
+        
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .indicator.active {
+            background-color: var(--kfc-white);
+            transform: scale(1.2);
+        }
+        
+        /* Balance Section */
+        .balance-section {
+            padding: 20px;
+            background-color: var(--kfc-white);
+            border-radius: 15px;
+            margin: 0 15px 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            color: var(--kfc-dark-gray);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .balance-cards {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .balance-card {
+            flex: 1;
+            background-color: var(--kfc-gray);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .balance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .balance-card.primary {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+        }
+        
+        .balance-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        /* Menu Section */
+        .menu-section {
+            padding: 20px;
+            margin: 0 15px 20px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .menu-item {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-image {
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .menu-details {
+            padding: 15px;
+        }
+        
+        .menu-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .menu-price {
+            color: var(--kfc-red);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .menu-earnings {
+            color: var(--kfc-dark-gray);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* Investment Section */
+        .investment-section {
+            padding: 20px;
+            margin: 0 15px 20px;
+        }
+        
+        .investment-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .investment-item {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .investment-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .investment-details {
+            flex: 1;
+            z-index: 2;
+        }
+        
+        .investment-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .investment-info {
+            color: var(--kfc-dark-gray);
+            font-size: 14px;
+        }
+        
+        .investment-amount {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--kfc-red);
+            z-index: 2;
+        }
+        
+        .investment-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 80px;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 1;
+        }
+        
+        /* My KFC Section */
+        .mykfc-section {
+            padding: 0;
+            margin: 0;
+        }
+        
+        .profile-card {
+            background-color: var(--kfc-white);
+            border-radius: 0;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 0;
+            box-shadow: none;
+        }
+        
+        .profile-avatar {
+            display: none;
+        }
+        
+        .profile-name {
+            display: none;
+        }
+        
+        .profile-email {
+            display: none;
+        }
+        
+        .stats-grid {
+            display: none;
+        }
+        
+        .balance-section {
+            border-radius: 0;
+            margin: 0;
+            box-shadow: none;
+            padding: 15px;
+        }
+        
+        .wallet-grid {
+            display: none;
+        }
+        
+        .action-grid {
+            display: none;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            margin-bottom: 0;
+        }
+        
+        .settings-item {
+            background-color: var(--kfc-white);
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 1px solid var(--kfc-gray);
+        }
+        
+        .settings-item:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: var(--kfc-gray);
+        }
+        
+        .settings-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .settings-icon {
+            font-size: 20px;
+            color: var(--kfc-red);
+        }
+        
+        .settings-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .history-section {
+            display: none;
+        }
+        
+        .user-id-section {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            padding: 20px;
+        }
+        
+        .user-id {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .balance-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .balance-item {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .balance-amount {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .balance-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: var(--kfc-gray);
+            margin: 15px 0;
+        }
+        
+        /* Invite Section */
+        .invite-section {
+            padding: 20px;
+        }
+        
+        .invite-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .invite-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--kfc-dark-gray);
+            margin-bottom: 10px;
+        }
+        
+        .commission-badge {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 auto 10px;
+            display: inline-block;
+        }
+        
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .level-card {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .level-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .level-commission {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--kfc-red);
+            margin-bottom: 10px;
+        }
+        
+        .level-users, .level-revenue {
+            font-size: 14px;
+            color: var(--kfc-dark-gray);
+            margin-bottom: 5px;
+        }
+        
+        .level-value {
+            font-weight: bold;
+        }
+        
+        .invite-rewards {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .rewards-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .rewards-list {
+            list-style-type: none;
+        }
+        
+        .rewards-item {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .rewards-example {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--kfc-gray);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .invite-link-container {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .invite-link {
+            background-color: var(--kfc-gray);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        .copy-btn {
+            background-color: var(--kfc-red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .whatsapp-btn {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Order Section */
+        .order-section {
+            padding: 20px;
+        }
+        
+        .order-item {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .order-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .order-status {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .order-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .order-amount {
+            font-weight: bold;
+            color: var(--kfc-red);
+        }
+        
+        .order-countdown {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--kfc-gray);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .countdown-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .countdown-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--kfc-red);
+        }
+        
+        /* Recharge Section */
+        .recharge-section {
+            padding: 20px;
+        }
+        
+        .channel-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .channel-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--kfc-gray);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .channel-btn.active {
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+        }
+        
+        .channel-details {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .channel-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .channel-info {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .channel-label {
+            font-weight: bold;
+        }
+        
+        .amount-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--kfc-light-gray);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .proceed-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .proceed-btn:hover {
+            background-color: var(--kfc-dark-red);
+        }
+        
+        .payment-confirmation {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .confirmation-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .confirmation-btn {
+            padding: 10px 20px;
+            background-color: var(--kfc-red);
+            color: var(--kfc-white);
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .confirmation-btn:hover {
+            background-color: var(--kfc-dark-red);
+        }
+        
+        /* Withdraw Section */
+        .withdraw-section {
+            padding: 20px;
+        }
+        
+        .withdraw-form {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .withdraw-info {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .withdraw-fee {
+            color: var(--kfc-red);
+            font-weight: bold;
+        }
+        
+        /* Change Password Section */
+        .change-password-section {
+            padding: 20px;
+        }
+        
+        .change-password-form {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Bind Bank Section */
+        .bind-bank-section {
+            padding: 20px;
+        }
+        
+        .bind-bank-form {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--kfc-white);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: var(--kfc-dark-gray);
+            font-size: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: var(--kfc-red);
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+        }
+        
+        /* Section Visibility */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Secret Animation */
+        @keyframes secretAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .secret-animation {
+            animation: secretAnimation 2s infinite;
+        }
+        
+        .investment-highlight {
+            border: 2px solid var(--kfc-gold);
+            position: relative;
+        }
+        
+        .investment-highlight::after {
+            content: 'POPULAR';
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background-color: var(--kfc-gold);
+            color: var(--kfc-dark-gray);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 3;
+        }
+        
+        .admin-section {
+            padding: 20px;
+        }
+        
+        .admin-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--kfc-dark-gray);
+        }
+        
+        .pending-deposit {
+            background-color: var(--kfc-white);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+        
+        .deposit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .deposit-user {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .deposit-amount {
+            font-weight: bold;
+            color: var(--kfc-red);
+        }
+        
+        .deposit-details {
+            font-size: 14px;
+            color: var(--kfc-dark-gray);
+            margin-bottom: 10px;
+        }
+        
+        .deposit-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .approve-btn, .reject-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .approve-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .reject-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--kfc-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Logout Button */
+        .logout-btn {
+            background-color: var(--kfc-dark-red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        /* Hidden Countdown */
+        .hidden-countdown {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 10px;
+            }
+            
+            .login-box {
+                max-width: 100%;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .kfc-logo {
+                font-size: 36px;
+            }
+            
+            .kfc-sublogo {
+                font-size: 16px;
+            }
+            
+            .notification {
+                right: 10px;
+                left: 10px;
+                transform: translateY(-150%);
+            }
+            
+            .notification.show {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <div class="form-header">
+                <div class="kfc-logo">KFC</div>
+                <div class="kfc-sublogo">SOUTH AFRICA</div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to your account or create a new one</p>
+                <div class="kfc-badge">Finger Lickin' Good</div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="login">Login</div>
+                <div class="tab" data-tab="signup">Sign Up</div>
+            </div>
+            
+            <div class="form-container">
+                <form class="form active" id="login-form">
+                    <div class="input-group">
+                        <label for="login-phone">Phone Number</label>
+                        <div class="phone-input">
+                            <div class="country-code">+27</div>
+                            <input type="tel" id="login-phone" class="phone-number" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="error-message" id="login-phone-error"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                        <span class="password-toggle" id="login-toggle">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        <div class="error-message" id="login-password-error"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="login-btn">Login Now</button>
+                    
+                    <div class="form-footer">
+                        <a href="#" id="forgot-password">Forgot your password?</a>
+                    </div>
+                </form>
+                
+                <form class="form" id="signup-form">
+                    <div class="input-group">
+                        <label for="signup-phone">Phone Number</label>
+                        <div class="phone-input">
+                            <div class="country-code">+27</div>
+                            <input type="tel" id="signup-phone" class="phone-number" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="error-message" id="signup-phone-error"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" placeholder="Create a password" required>
+                        <span class="password-toggle" id="signup-toggle">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        <div class="password-strength">
+                            <div class="strength-bar" id="password-strength"></div>
+                        </div>
+                        <div class="error-message" id="signup-password-error"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+                        <span class="password-toggle" id="confirm-toggle">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        <div class="error-message" id="confirm-password-error"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="invitation-code">Invitation Code</label>
+                        <input type="text" id="invitation-code" placeholder="Enter invitation code (optional)">
+                    </div>
+                    
+                    <button type="submit" class="btn" id="signup-btn">Create Account</button>
+                    
+                    <div class="form-footer">
+                        By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="dashboard-container" style="display: none;">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-top">
+                <div class="kfc-logo">KFC</div>
+                <div class="user-info">
+                    <div class="user-avatar">JD</div>
+                    <div id="user-display-name">John Doe</div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <div class="action-btn" data-target="recharge-section">Recharge</div>
+                <div class="action-btn" data-target="order-section">Order</div>
+                <div class="action-btn" data-target="invite-section">Invite</div>
+                <div class="action-btn">Check-in</div>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+        
+        <!-- Home Section -->
+        <div id="home-section" class="section active">
+            <!-- Banner Slider -->
+            <div class="banner-slider">
+                <div class="slider-container">
+                    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')">
+                        <div class="slide-content">
+                            <div class="slide-title">Zinger Tower Burger</div>
+                            <div class="slide-description">Crispy chicken fillet with cheese, lettuce and mayo</div>
+                        </div>
+                    </div>
+                    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1567620832903-9fc6debc209f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')">
+                        <div class="slide-content">
+                            <div class="slide-title">Hot & Crispy Chicken</div>
+                            <div class="slide-description">Our signature recipe with 11 herbs and spices</div>
+                        </div>
+                    </div>
+                    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')">
+                        <div class="slide-content">
+                            <div class="slide-title">Family Bucket Deal</div>
+                            <div class="slide-description">Perfect for sharing with the whole family</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slider-indicators">
+                    <div class="indicator active"></div>
+                    <div class="indicator"></div>
+                    <div class="indicator"></div>
+                </div>
+            </div>
+            
+            <!-- Balance Section -->
+            <div class="balance-section">
+                <div class="section-title">My KFC Wallet</div>
+                <div class="balance-cards">
+                    <div class="balance-card primary">
+                        <div class="balance-label">Current Balance</div>
+                        <div class="balance-value" id="current-balance">R0.00</div>
+                    </div>
+                    <div class="balance-card" id="reward-points-card">
+                        <div class="balance-label">Reward Points</div>
+                        <div class="balance-value" id="reward-points">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Menu Section -->
+            <div class="menu-section">
+                <div class="section-title">Today's Specials</div>
+                <div class="menu-grid">
+                    <div class="menu-item" data-name="Zinger Burger" data-price="200" data-daily-income="14" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Zinger Burger</div>
+                            <div class="menu-price">R200</div>
+                            <div class="menu-earnings">Earn R14 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" data-name="Chicken Twister" data-price="300" data-daily-income="28" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1606755962773-d324e3833241?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Chicken Twister</div>
+                            <div class="menu-price">R300</div>
+                            <div class="menu-earnings">Earn R28 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" data-name="Popcorn Chicken" data-price="450" data-daily-income="42" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Popcorn Chicken</div>
+                            <div class="menu-price">R450</div>
+                            <div class="menu-earnings">Earn R42 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item secret-animation" data-name="Secret Recipe Fries" data-price="800" data-daily-income="140" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Secret Recipe Fries</div>
+                            <div class="menu-price">R800</div>
+                            <div class="menu-earnings">Earn R140 daily for 32 days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Investment Section -->
+            <div class="investment-section">
+                <div class="section-title">Investment Packages</div>
+                <div class="investment-grid">
+                    <div class="investment-item investment-highlight" data-name="Starter Package" data-price="70" data-daily-income="14" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Starter Package</div>
+                            <div class="investment-info">Earn R14 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R70</div>
+                    </div>
+                    <div class="investment-item" data-name="Premium Package" data-price="140" data-daily-income="28" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Premium Package</div>
+                            <div class="investment-info">Earn R28 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R140</div>
+                    </div>
+                    <div class="investment-item" data-name="Gold Package" data-price="210" data-daily-income="42" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1586190848861-99aa4a171e90?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Gold Package</div>
+                            <div class="investment-info">Earn R42 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R210</div>
+                    </div>
+                    <div class="investment-item" data-name="VIP Package" data-price="700" data-daily-income="140" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1606755962773-d324e3833241?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">VIP Package</div>
+                            <div class="investment-info">Earn R140 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R700</div>
+                    </div>
+                    <div class="investment-item" data-name="Elite Package" data-price="1400" data-daily-income="280" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Elite Package</div>
+                            <div class="investment-info">Earn R280 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R1400</div>
+                    </div>
+                    <div class="investment-item" data-name="Ultimate Package" data-price="3000" data-daily-income="600" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Ultimate Package</div>
+                            <div class="investment-info">Earn R600 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R3000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu Section -->
+        <div id="menu-section" class="section">
+            <div class="investment-section">
+                <div class="section-title">All Investment Packages</div>
+                <div class="investment-grid">
+                    <div class="investment-item investment-highlight" data-name="Starter Package" data-price="70" data-daily-income="14" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Starter Package</div>
+                            <div class="investment-info">Earn R14 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R70</div>
+                    </div>
+                    <div class="investment-item" data-name="Premium Package" data-price="140" data-daily-income="28" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Premium Package</div>
+                            <div class="investment-info">Earn R28 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R140</div>
+                    </div>
+                    <div class="investment-item" data-name="Gold Package" data-price="210" data-daily-income="42" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1586190848861-99aa4a171e90?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Gold Package</div>
+                            <div class="investment-info">Earn R42 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R210</div>
+                    </div>
+                    <div class="investment-item" data-name="VIP Package" data-price="700" data-daily-income="140" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1606755962773-d324e3833241?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">VIP Package</div>
+                            <div class="investment-info">Earn R140 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R700</div>
+                    </div>
+                    <div class="investment-item" data-name="Elite Package" data-price="1400" data-daily-income="280" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Elite Package</div>
+                            <div class="investment-info">Earn R280 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R1400</div>
+                    </div>
+                    <div class="investment-item" data-name="Ultimate Package" data-price="3000" data-daily-income="600" data-days="32">
+                        <div class="investment-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="investment-details">
+                            <div class="investment-name">Ultimate Package</div>
+                            <div class="investment-info">Earn R600 daily for 32 days</div>
+                        </div>
+                        <div class="investment-amount">R3000</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="section-title">All Menu Items</div>
+                <div class="menu-grid">
+                    <div class="menu-item" data-name="Zinger Burger" data-price="200" data-daily-income="14" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Zinger Burger</div>
+                            <div class="menu-price">R200</div>
+                            <div class="menu-earnings">Earn R14 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" data-name="Chicken Twister" data-price="300" data-daily-income="28" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1606755962773-d324e3833241?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Chicken Twister</div>
+                            <div class="menu-price">R300</div>
+                            <div class="menu-earnings">Earn R28 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" data-name="Popcorn Chicken" data-price="450" data-daily-income="42" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Popcorn Chicken</div>
+                            <div class="menu-price">R450</div>
+                            <div class="menu-earnings">Earn R42 daily for 32 days</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" data-name="Secret Recipe Fries" data-price="800" data-daily-income="140" data-days="32">
+                        <div class="menu-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="menu-details">
+                            <div class="menu-name">Secret Recipe Fries</div>
+                            <div class="menu-price">R800</div>
+                            <div class="menu-earnings">Earn R140 daily for 32 days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Invite Section -->
+        <div id="invite-section" class="section">
+            <div class="invite-section">
+                <div class="invite-header">
+                    <div class="invite-title">NUMBER OF USERS</div>
+                    <div class="commission-badge">25%</div>
+                    <div>Commission</div>
+                </div>
+                
+                <div class="invite-link-container">
+                    <div class="section-title">Invite Friends & Earn Rewards</div>
+                    <p>Share your unique referral link with friends and earn commissions when they invest!</p>
+                    <div class="invite-link" id="referral-link">kfc-breakfast11.vercel.app?ref=<span id="referral-code">KFC123456</span></div>
+                    <button class="copy-btn" id="copy-link-btn">Copy Link</button>
+                    <button class="whatsapp-btn" id="whatsapp-share-btn">
+                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                </div>
+                
+                <div class="level-grid">
+                    <div class="level-card">
+                        <div class="level-title">Level 1</div>
+                        <div class="level-commission">5%</div>
+                        <div class="level-users">Commission</div>
+                        <div class="level-users">0 <span class="level-value">Users</span></div>
+                        <div class="level-revenue">R0.00 <span class="level-value">Revenue</span></div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title">Level 2</div>
+                        <div class="level-commission">1%</div>
+                        <div class="level-users">Commission</div>
+                        <div class="level-users">0 <span class="level-value">Users</span></div>
+                        <div class="level-revenue">R0.00 <span class="level-value">Revenue</span></div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title">Level 3</div>
+                        <div class="level-commission">1%</div>
+                        <div class="level-users">Commission</div>
+                        <div class="level-users">0 <span class="level-value">Users</span></div>
+                        <div class="level-revenue">R0.00 <span class="level-value">Revenue</span></div>
+                    </div>
+                </div>
+                
+                <div class="invite-rewards">
+                    <div class="rewards-title">Invitation Rewards:</div>
+                    <ul class="rewards-list">
+                        <li class="rewards-item">Invite first-level subordinates to invest and get 25% cashback rewards.</li>
+                        <li class="rewards-item">Invite second-level subordinates to invest and get 5% cashback rewards.</li>
+                        <li class="rewards-item">Invite third-level subordinates to invest and get 1% cashback rewards.</li>
+                    </ul>
+                    <div class="rewards-example">
+                        Example: If your first-level subordinate invests R500, you get R125 cashback immediately.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- My KFC Section -->
+        <div id="mykfc-section" class="section">
+            <div class="user-id-section">
+                <div class="user-id">ID: 0631287462</div>
+                <div class="balance-row">
+                    <div class="balance-item">
+                        <div class="balance-amount" id="my-balance">R20.00</div>
+                        <div class="balance-desc">Current Balance</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-amount" id="accumulated-income">R0.00</div>
+                        <div class="balance-desc">Accumulated income</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="balance-section">
+                <div class="section-title">My Order Check</div>
+                <div class="divider"></div>
+                <div class="settings-grid">
+                    <div class="settings-item" data-target="withdraw-section">
+                        <div class="settings-details">
+                            <div class="settings-icon">💰</div>
+                            <div class="settings-name">Withdraw</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item" data-target="change-password-section">
+                        <div class="settings-details">
+                            <div class="settings-icon">🔒</div>
+                            <div class="settings-name">Change password</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item" data-target="bind-bank-section">
+                        <div class="settings-details">
+                            <div class="settings-icon">💳</div>
+                            <div class="settings-name">Bind Bank Account</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-details">
+                            <div class="settings-icon">ℹ️</div>
+                            <div class="settings-name">About Us</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item" id="customer-service-btn">
+                        <div class="settings-details">
+                            <div class="settings-icon">📞</div>
+                            <div class="settings-name">Customer Service</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-details">
+                            <div class="settings-icon">🎁</div>
+                            <div class="settings-name">Gift code</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-details">
+                            <div class="settings-icon">👥</div>
+                            <div class="settings-name">Invite</div>
+                        </div>
+                        <div class="settings-arrow">›</div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logout-btn">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Order Section -->
+        <div id="order-section" class="section">
+            <div class="order-section">
+                <div class="section-title">My Orders</div>
+                <div id="orders-container">
+                    <!-- Orders will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recharge Section -->
+        <div id="recharge-section" class="section">
+            <div class="recharge-section">
+                <div class="section-title">Recharge Your Account</div>
+                
+                <div class="channel-selector">
+                    <button class="channel-btn active" data-channel="tymebank">Tymebank</button>
+                </div>
+                
+                <div class="channel-details" id="tymebank-details">
+                    <div class="channel-title">Tymebank Payment Details</div>
+                    <div class="channel-info">
+                        <span class="channel-label">Beneficiary:</span> KFC
+                    </div>
+                    <div class="channel-info">
+                        <span class="channel-label">Bank Name:</span> Tymebank
+                    </div>
+                    <div class="channel-info">
+                        <span class="channel-label">Account Number:</span> 53002770920
+                    </div>
+                    <div class="channel-info">
+                        <span class="channel-label">Reference:</span> <span id="tymebank-reference">KFC987654</span>
+                    </div>
+                    <div class="channel-info">
+                        <span class="channel-label">Note:</span> Do immediate payment
+                    </div>
+                </div>
+                
+                <input type="number" class="amount-input" placeholder="Enter Amount (Minimum R70)" min="70">
+                <button class="proceed-btn" id="proceed-btn">Proceed</button>
+                
+                <div class="payment-confirmation" id="payment-confirmation" style="display: none;">
+                    <div class="confirmation-title">Have you completed the payment?</div>
+                    <button class="confirmation-btn" id="yes-paid-btn">Yes, I Paid</button>
+                    <button class="confirmation-btn" id="not-paid-btn">Not Yet</button>
+                </div>
+                
+                <!-- Hidden countdown for payment processing -->
+                <div class="hidden-countdown" id="payment-countdown">180</div>
+            </div>
+        </div>
+        
+        <!-- Withdraw Section -->
+        <div id="withdraw-section" class="section">
+            <div class="withdraw-section">
+                <div class="section-title">Withdraw Funds</div>
+                <div class="withdraw-form">
+                    <div class="input-group">
+                        <label for="withdraw-amount">Amount to Withdraw</label>
+                        <input type="number" id="withdraw-amount" placeholder="Enter amount (Minimum R50)" min="50">
+                    </div>
+                    <div class="withdraw-info">
+                        <div>Withdrawal Fee: <span class="withdraw-fee">10%</span></div>
+                        <div>You will receive: <span id="withdraw-receive">R0.00</span></div>
+                    </div>
+                    <button class="proceed-btn" id="withdraw-btn">Withdraw</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Change Password Section -->
+        <div id="change-password-section" class="section">
+            <div class="change-password-section">
+                <div class="section-title">Change Password</div>
+                <div class="change-password-form">
+                    <div class="input-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" placeholder="Enter current password">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" placeholder="Enter new password">
+                    </div>
+                    <div class="input-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <input type="password" id="confirm-new-password" placeholder="Confirm new password">
+                    </div>
+                    <button class="proceed-btn" id="change-password-btn">Change Password</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bind Bank Account Section -->
+        <div id="bind-bank-section" class="section">
+            <div class="bind-bank-section">
+                <div class="section-title">Bind Bank Account</div>
+                <div class="bind-bank-form">
+                    <div class="input-group">
+                        <label for="account-name">Account Holder Name</label>
+                        <input type="text" id="account-name" placeholder="Enter account holder name">
+                    </div>
+                    <div class="input-group">
+                        <label for="bank-name">Bank Name</label>
+                        <input type="text" id="bank-name" placeholder="Enter bank name">
+                    </div>
+                    <div class="input-group">
+                        <label for="account-number">Account Number</label>
+                        <input type="text" id="account-number" placeholder="Enter account number">
+                    </div>
+                    <button class="proceed-btn" id="bind-bank-btn">Bind Account</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admin Section (Hidden from normal users) -->
+        <div id="admin-section" class="section">
+            <div class="admin-section">
+                <div class="admin-title">Pending Deposits</div>
+                
+                <div class="pending-deposit">
+                    <div class="deposit-header">
+                        <div class="deposit-user">John Doe</div>
+                        <div class="deposit-amount">R70</div>
+                    </div>
+                    <div class="deposit-details">
+                        <div>Bank: Tymebank</div>
+                        <div>Reference: KFC987654</div>
+                        <div>Date: 2023-10-15 14:30</div>
+                    </div>
+                    <div class="deposit-actions">
+                        <button class="approve-btn">Approve</button>
+                        <button class="reject-btn">Reject</button>
+                    </div>
+                </div>
+                
+                <div class="pending-deposit">
+                    <div class="deposit-header">
+                        <div class="deposit-user">Jane Smith</div>
+                        <div class="deposit-amount">R140</div>
+                    </div>
+                    <div class="deposit-details">
+                        <div>Bank: Capitec</div>
+                        <div>Reference: KFC123456</div>
+                        <div>Date: 2023-10-15 13:45</div>
+                    </div>
+                    <div class="deposit-actions">
+                        <button class="approve-btn">Approve</button>
+                        <button class="reject-btn">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-target="home-section">
+                <div class="nav-icon">🏠</div>
+                <div>Home</div>
+            </div>
+            <div class="nav-item" data-target="menu-section">
+                <div class="nav-icon">🍗</div>
+                <div>Products</div>
+            </div>
+            <div class="nav-item" data-target="invite-section">
+                <div class="nav-icon">👥</div>
+                <div>Share</div>
+            </div>
+            <div class="nav-item" data-target="mykfc-section">
+                <div class="nav-icon">👤</div>
+                <div>My</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAbq7egyFPTWWMsaU9yuKesRXAlVQsgdoc",
+            authDomain: "kfc-platform-10943.firebaseapp.com",
+            projectId: "kfc-platform-10943",
+            storageBucket: "kfc-platform-10943.firebasestorage.app",
+            messagingSenderId: "8611601706",
+            appId: "1:8611601706:web:76401b3309ae1917205253",
+            measurementId: "G-YE1V553F0Y"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // User storage using localStorage
+        const USER_STORAGE_KEY = 'kfcUsers';
+        const CURRENT_USER_KEY = 'kfcCurrentUser';
+        const USER_DATA_KEY = 'kfcUserData';
+        const USER_ORDERS_KEY = 'kfcUserOrders';
+        
+        // Initialize users in localStorage if not exists
+        function initializeUsers() {
+            if (!localStorage.getItem(USER_STORAGE_KEY)) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({}));
+            }
+            
+            if (!localStorage.getItem(USER_DATA_KEY)) {
+                localStorage.setItem(USER_DATA_KEY, JSON.stringify({}));
+            }
+            
+            if (!localStorage.getItem(USER_ORDERS_KEY)) {
+                localStorage.setItem(USER_ORDERS_KEY, JSON.stringify({}));
+            }
+        }
+        
+        // Get all users
+        function getUsers() {
+            return JSON.parse(localStorage.getItem(USER_STORAGE_KEY));
+        }
+        
+        // Save a user
+        function saveUser(phone, password, referralCode = null) {
+            const users = getUsers();
+            const userReferralCode = generateReferralCode();
+            users[phone] = { 
+                phone, 
+                password, 
+                referralCode: userReferralCode,
+                referredBy: referralCode,
+                createdAt: new Date().toISOString(),
+                balance: 0,
+                rewardPoints: 0,
+                accumulatedIncome: 0,
+                orders: []
+            };
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(users));
+            return userReferralCode;
+        }
+        
+        // Generate random referral code
+        function generateReferralCode() {
+            return 'KFC' + Math.floor(100000 + Math.random() * 900000);
+        }
+        
+        // Check if user exists
+        function userExists(phone) {
+            const users = getUsers();
+            return users.hasOwnProperty(phone);
+        }
+        
+        // Validate user credentials
+        function validateUser(phone, password) {
+            const users = getUsers();
+            return users[phone] && users[phone].password === password;
+        }
+        
+        // Get current user data
+        function getCurrentUserData() {
+            const currentUserPhone = localStorage.getItem(CURRENT_USER_KEY);
+            if (!currentUserPhone) return null;
+            
+            const users = getUsers();
+            return users[currentUserPhone] || null;
+        }
+        
+        // Update user data
+        function updateUserData(phone, data) {
+            const users = getUsers();
+            if (users[phone]) {
+                users[phone] = { ...users[phone], ...data };
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(users));
+            }
+        }
+        
+        // Get user orders
+        function getUserOrders(phone) {
+            const orders = JSON.parse(localStorage.getItem(USER_ORDERS_KEY));
+            return orders[phone] || [];
+        }
+        
+        // Save user order
+        function saveUserOrder(phone, order) {
+            const orders = JSON.parse(localStorage.getItem(USER_ORDERS_KEY));
+            if (!orders[phone]) {
+                orders[phone] = [];
+            }
+            orders[phone].push(order);
+            localStorage.setItem(USER_ORDERS_KEY, JSON.stringify(orders));
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Hide error message
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+        
+        // Validate phone number format
+        function validatePhoneNumber(phone) {
+            // South African phone number validation (10 digits after +27)
+            const phoneRegex = /^[0-9]{9}$/;
+            return phoneRegex.test(phone);
+        }
+        
+        // Validate password strength
+        function validatePassword(password) {
+            // At least 8 characters, one uppercase, one lowercase, one number
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            return passwordRegex.test(password);
+        }
+        
+        // Switch to dashboard view
+        function showDashboard() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('dashboard-page').style.display = 'block';
+            
+            // Update user info in dashboard
+            const currentUser = getCurrentUserData();
+            if (currentUser) {
+                document.getElementById('user-display-name').textContent = currentUser.phone;
+                document.querySelector('.user-avatar').textContent = currentUser.phone.charAt(0).toUpperCase();
+                
+                // Update balances
+                document.getElementById('current-balance').textContent = `R${currentUser.balance.toFixed(2)}`;
+                document.getElementById('my-balance').textContent = `R${currentUser.balance.toFixed(2)}`;
+                document.getElementById('accumulated-income').textContent = `R${currentUser.accumulatedIncome.toFixed(2)}`;
+                document.getElementById('reward-points').textContent = currentUser.rewardPoints || 0;
+                
+                // Set referral code
+                document.getElementById('referral-code').textContent = currentUser.referralCode;
+                
+                // Update orders section
+                updateOrdersSection();
+            }
+        }
+        
+        // Update orders section
+        function updateOrdersSection() {
+            const currentUser = getCurrentUserData();
+            if (!currentUser) return;
+            
+            const ordersContainer = document.getElementById('orders-container');
+            const userOrders = getUserOrders(currentUser.phone);
+            
+            if (userOrders.length === 0) {
+                ordersContainer.innerHTML = '<p>No orders yet. Purchase a package to see your orders here.</p>';
+                return;
+            }
+            
+            let ordersHTML = '';
+            userOrders.forEach(order => {
+                const statusClass = order.status === 'active' ? 'order-status' : 'order-status pending';
+                ordersHTML += `
+                    <div class="order-item">
+                        <div class="order-header">
+                            <div class="order-name">${order.name}</div>
+                            <div class="${statusClass}">${order.status === 'active' ? 'Active' : 'Pending'}</div>
+                        </div>
+                        <div class="order-details">
+                            <div>Investment: <span class="order-amount">R${order.price}</span></div>
+                            <div>Daily Income: R${order.dailyIncome}</div>
+                        </div>
+                        <div class="order-countdown">
+                            <div class="countdown-title">Next Income In:</div>
+                            <div class="countdown-timer">${order.status === 'active' ? '23:59:45' : 'Awaiting Approval'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ordersContainer.innerHTML = ordersHTML;
+        }
+        
+        // Switch to login view
+        function showLogin() {
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('dashboard-page').style.display = 'none';
+            localStorage.removeItem(CURRENT_USER_KEY);
+        }
+        
+        // Initialize
+        initializeUsers();
+        
+        // Check if user is already logged in
+        if (localStorage.getItem(CURRENT_USER_KEY)) {
+            showDashboard();
+        }
+        
+        // Tab switching functionality for login page
+        const tabs = document.querySelectorAll('.tab');
+        const forms = document.querySelectorAll('.form');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update active form
+                forms.forEach(form => {
+                    form.classList.remove('active');
+                    if (form.id === `${targetTab}-form`) {
+                        form.classList.add('active');
+                    }
+                });
+                
+                // Clear all errors when switching tabs
+                document.querySelectorAll('.error-message').forEach(error => {
+                    error.style.display = 'none';
+                });
+            });
+        });
+        
+        // Password visibility toggle
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+        
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const inputId = toggle.id.replace('-toggle', '');
+                const passwordInput = document.getElementById(inputId);
+                const icon = toggle.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+        
+        // Password strength indicator
+        const passwordInput = document.getElementById('signup-password');
+        const strengthBar = document.getElementById('password-strength');
+        
+        if (passwordInput && strengthBar) {
+            passwordInput.addEventListener('input', () => {
+                const password = passwordInput.value;
+                let strength = 0;
+                
+                if (password.length >= 8) strength += 1;
+                if (/[A-Z]/.test(password)) strength += 1;
+                if (/[0-9]/.test(password)) strength += 1;
+                if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+                
+                strengthBar.className = 'strength-bar';
+                
+                if (password.length > 0) {
+                    if (strength <= 1) {
+                        strengthBar.classList.add('strength-weak');
+                    } else if (strength <= 2) {
+                        strengthBar.classList.add('strength-medium');
+                    } else {
+                        strengthBar.classList.add('strength-strong');
+                    }
+                }
+            });
+        }
+        
+        // Login form submission
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const phone = document.getElementById('login-phone').value;
+            const password = document.getElementById('login-password').value;
+            let isValid = true;
+            
+            // Clear previous errors
+            hideError('login-phone-error');
+            hideError('login-password-error');
+            
+            // Validate phone
+            if (!phone) {
+                showError('login-phone-error', 'Phone number is required');
+                isValid = false;
+            } else if (!validatePhoneNumber(phone)) {
+                showError('login-phone-error', 'Please enter a valid South African phone number');
+                isValid = false;
+            }
+            
+            // Validate password
+            if (!password) {
+                showError('login-password-error', 'Password is required');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Check if user exists and credentials are correct
+                const fullPhone = '+27' + phone;
+                if (!userExists(fullPhone)) {
+                    showError('login-phone-error', 'This phone number is not registered');
+                } else if (!validateUser(fullPhone, password)) {
+                    showError('login-password-error', 'Incorrect password');
+                } else {
+                    // Successful login
+                    localStorage.setItem(CURRENT_USER_KEY, fullPhone);
+                    showNotification('Login successful! Welcome back to KFC!', 'success');
+                    setTimeout(() => {
+                        showDashboard();
+                    }, 1000);
+                }
+            }
+        });
+        
+        // Signup form submission
+        document.getElementById('signup-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const phone = document.getElementById('signup-phone').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const invitationCode = document.getElementById('invitation-code').value;
+            let isValid = true;
+            
+            // Clear previous errors
+            hideError('signup-phone-error');
+            hideError('signup-password-error');
+            hideError('confirm-password-error');
+            
+            // Validate phone
+            if (!phone) {
+                showError('signup-phone-error', 'Phone number is required');
+                isValid = false;
+            } else if (!validatePhoneNumber(phone)) {
+                showError('signup-phone-error', 'Please enter a valid South African phone number');
+                isValid = false;
+            } else {
+                const fullPhone = '+27' + phone;
+                if (userExists(fullPhone)) {
+                    showError('signup-phone-error', 'This phone number is already registered');
+                    isValid = false;
+                }
+            }
+            
+            // Validate password
+            if (!password) {
+                showError('signup-password-error', 'Password is required');
+                isValid = false;
+            } else if (!validatePassword(password)) {
+                showError('signup-password-error', 'Password must be at least 8 characters with uppercase, lowercase, and number');
+                isValid = false;
+            }
+            
+            // Validate confirm password
+            if (!confirmPassword) {
+                showError('confirm-password-error', 'Please confirm your password');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                showError('confirm-password-error', 'Passwords do not match');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Save user
+                const fullPhone = '+27' + phone;
+                const referralCode = saveUser(fullPhone, password, invitationCode || null);
+                showNotification('Account created successfully! You can now log in.', 'success');
+                
+                // Clear form
+                document.getElementById('signup-form').reset();
+                if (strengthBar) strengthBar.className = 'strength-bar';
+                
+                // Switch to login tab
+                document.querySelector('[data-tab="login"]').click();
+            }
+        });
+        
+        // Forgot password functionality
+        document.getElementById('forgot-password').addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotification('Password reset instructions have been sent to your phone.', 'success');
+        });
+        
+        // Dashboard functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Banner Slider Functionality
+            const sliderContainer = document.querySelector('.slider-container');
+            const slides = document.querySelectorAll('.slide');
+            const indicators = document.querySelectorAll('.indicator');
+            let currentSlide = 0;
+            const slideCount = slides.length;
+            
+            // Set up slider indicators
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlider();
+                });
+            });
+            
+            // Auto slide every 5 seconds
+            if (sliderContainer) {
+                setInterval(() => {
+                    currentSlide = (currentSlide + 1) % slideCount;
+                    updateSlider();
+                }, 5000);
+            }
+            
+            function updateSlider() {
+                // Update slider position
+                if (sliderContainer) {
+                    sliderContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+                }
+                
+                // Update active indicator
+                indicators.forEach((indicator, index) => {
+                    if (index === currentSlide) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Add hover effects to menu items
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)';
+                });
+            });
+            
+            // Bottom navigation functionality
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show target section
+                    document.querySelectorAll('.section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            // Header action buttons functionality
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    if (targetId) {
+                        // Update active nav item
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        
+                        // Show target section
+                        document.querySelectorAll('.section').forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        document.getElementById(targetId).classList.add('active');
+                    }
+                });
+            });
+            
+            // My KFC section button functionality
+            const settingsItems = document.querySelectorAll('.settings-item');
+            settingsItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    if (targetId) {
+                        // Show target section
+                        document.querySelectorAll('.section').forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        document.getElementById(targetId).classList.add('active');
+                    } else {
+                        const settingName = this.querySelector('.settings-name').textContent;
+                        if (settingName === 'Customer Service') {
+                            alert('Join WhatsApp group: https://chat.whatsapp.com/EnK4a1VRpZaLp4yFlg20Ng\n\nOr contact customer service: 0631287462');
+                        } else {
+                            alert(`${settingName} functionality would open here.`);
+                        }
+                    }
+                });
+            });
+            
+            // Secret animation for the special item
+            const secretItem = document.querySelector('.secret-animation');
+            if (secretItem) {
+                secretItem.addEventListener('click', function() {
+                    alert("You found the secret recipe! Enjoy 10% off your next order with code: SECRET10");
+                });
+            }
+            
+            // Investment package click functionality
+            const investmentItems = document.querySelectorAll('.investment-item, .menu-item');
+            investmentItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const investmentName = this.getAttribute('data-name') || this.querySelector('.investment-name').textContent;
+                    const investmentAmount = this.getAttribute('data-price') || parseFloat(this.querySelector('.investment-amount').textContent.replace('R', ''));
+                    const dailyIncome = this.getAttribute('data-daily-income');
+                    const days = this.getAttribute('data-days');
+                    
+                    const currentUser = getCurrentUserData();
+                    if (currentUser && currentUser.balance >= parseFloat(investmentAmount)) {
+                        if (confirm(`Do you want to purchase ${investmentName} for R${investmentAmount}?`)) {
+                            // Deduct from balance and add to active investments
+                            const amount = parseFloat(investmentAmount);
+                            updateUserData(currentUser.phone, {
+                                balance: currentUser.balance - amount
+                            });
+                            
+                            // Save order
+                            saveUserOrder(currentUser.phone, {
+                                name: investmentName,
+                                price: amount,
+                                dailyIncome: dailyIncome,
+                                days: days,
+                                status: 'active',
+                                purchaseDate: new Date().toISOString()
+                            });
+                            
+                            // Update UI
+                            document.getElementById('current-balance').textContent = `R${(currentUser.balance - amount).toFixed(2)}`;
+                            document.getElementById('my-balance').textContent = `R${(currentUser.balance - amount).toFixed(2)}`;
+                            
+                            // Update orders section
+                            updateOrdersSection();
+                            
+                            showNotification(`Successfully purchased ${investmentName}! Daily income will be credited to your accumulated income.`, 'success');
+                        }
+                    } else {
+                        alert(`You don't have enough balance to purchase this package. Please recharge your account first.`);
+                    }
+                });
+            });
+            
+            // Reward points conversion
+            const rewardPointsCard = document.getElementById('reward-points-card');
+            if (rewardPointsCard) {
+                rewardPointsCard.addEventListener('click', function() {
+                    const currentUser = getCurrentUserData();
+                    if (currentUser && currentUser.rewardPoints > 0) {
+                        const pointsToConvert = currentUser.rewardPoints;
+                        const incomeToAdd = pointsToConvert; // 1 point = R1 accumulated income
+                        
+                        if (confirm(`Convert ${pointsToConvert} reward points to R${incomeToAdd} accumulated income?`)) {
+                            updateUserData(currentUser.phone, {
+                                rewardPoints: 0,
+                                accumulatedIncome: currentUser.accumulatedIncome + incomeToAdd
+                            });
+                            
+                            // Update UI
+                            document.getElementById('reward-points').textContent = '0';
+                            document.getElementById('accumulated-income').textContent = `R${(currentUser.accumulatedIncome + incomeToAdd).toFixed(2)}`;
+                            
+                            showNotification(`Successfully converted ${pointsToConvert} reward points to R${incomeToAdd} accumulated income!`, 'success');
+                        }
+                    } else {
+                        alert('You have no reward points to convert.');
+                    }
+                });
+            }
+            
+            // Recharge section functionality
+            const channelButtons = document.querySelectorAll('.channel-btn');
+            const tymebankDetails = document.getElementById('tymebank-details');
+            const proceedBtn = document.getElementById('proceed-btn');
+            const paymentConfirmation = document.getElementById('payment-confirmation');
+            const yesPaidBtn = document.getElementById('yes-paid-btn');
+            const notPaidBtn = document.getElementById('not-paid-btn');
+            const paymentCountdown = document.getElementById('payment-countdown');
+            
+            // Generate random references
+            function generateRandomReference() {
+                return 'KFC' + Math.floor(100000 + Math.random() * 900000);
+            }
+            
+            if (document.getElementById('tymebank-reference')) {
+                document.getElementById('tymebank-reference').textContent = generateRandomReference();
+            }
+            
+            // Channel selection
+            if (channelButtons.length > 0) {
+                channelButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const channel = this.getAttribute('data-channel');
+                        
+                        // Update active channel button
+                        channelButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                });
+            }
+            
+            // Proceed button
+            if (proceedBtn) {
+                proceedBtn.addEventListener('click', function() {
+                    const amountInput = document.querySelector('.amount-input');
+                    const amount = parseFloat(amountInput.value);
+                    
+                    if (isNaN(amount) || amount < 70) {
+                        alert('Please enter a valid amount (minimum R70)');
+                        return;
+                    }
+                    
+                    if (paymentConfirmation) {
+                        paymentConfirmation.style.display = 'block';
+                    }
+                });
+            }
+            
+            // Payment confirmation
+            if (yesPaidBtn) {
+                yesPaidBtn.addEventListener('click', function() {
+                    const amountInput = document.querySelector('.amount-input');
+                    const amount = parseFloat(amountInput.value);
+                    
+                    // Start countdown
+                    let countdown = 180; // 3 minutes
+                    paymentCountdown.textContent = countdown;
+                    
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        paymentCountdown.textContent = countdown;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            
+                            // Add funds to user's balance and reward points
+                            const currentUser = getCurrentUserData();
+                            if (currentUser) {
+                                const rewardPoints = Math.floor(amount / 70) * 3; // R70 = 3 points
+                                
+                                updateUserData(currentUser.phone, {
+                                    balance: currentUser.balance + amount,
+                                    rewardPoints: (currentUser.rewardPoints || 0) + rewardPoints
+                                });
+                                
+                                // Update UI
+                                document.getElementById('current-balance').textContent = `R${(currentUser.balance + amount).toFixed(2)}`;
+                                document.getElementById('my-balance').textContent = `R${(currentUser.balance + amount).toFixed(2)}`;
+                                document.getElementById('reward-points').textContent = (currentUser.rewardPoints || 0) + rewardPoints;
+                                
+                                showNotification(`Payment confirmed! R${amount.toFixed(2)} has been added to your balance and ${rewardPoints} reward points earned.`, 'success');
+                            }
+                        }
+                    }, 1000);
+                    
+                    if (paymentConfirmation) {
+                        paymentConfirmation.style.display = 'none';
+                    }
+                    
+                    // Reset form
+                    if (amountInput) amountInput.value = '';
+                });
+            }
+            
+            if (notPaidBtn) {
+                notPaidBtn.addEventListener('click', function() {
+                    if (paymentConfirmation) {
+                        paymentConfirmation.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Copy referral link
+            const copyLinkBtn = document.getElementById('copy-link-btn');
+            if (copyLinkBtn) {
+                copyLinkBtn.addEventListener('click', function() {
+                    const referralLink = document.getElementById('referral-link').textContent;
+                    navigator.clipboard.writeText(referralLink).then(() => {
+                        showNotification('Referral link copied to clipboard!', 'success');
+                    });
+                });
+            }
+            
+            // Share on WhatsApp
+            const whatsappShareBtn = document.getElementById('whatsapp-share-btn');
+            if (whatsappShareBtn) {
+                whatsappShareBtn.addEventListener('click', function() {
+                    const referralLink = document.getElementById('referral-link').textContent;
+                    const message = `Join me on KFC Investment Platform! Use my referral link: ${referralLink}`;
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                });
+            }
+            
+            // Withdraw functionality
+            const withdrawAmountInput = document.getElementById('withdraw-amount');
+            const withdrawReceive = document.getElementById('withdraw-receive');
+            const withdrawBtn = document.getElementById('withdraw-btn');
+            
+            if (withdrawAmountInput && withdrawReceive) {
+                withdrawAmountInput.addEventListener('input', function() {
+                    const amount = parseFloat(this.value) || 0;
+                    const fee = amount * 0.1; // 10% fee
+                    const receive = amount - fee;
+                    withdrawReceive.textContent = `R${receive.toFixed(2)}`;
+                });
+            }
+            
+            if (withdrawBtn) {
+                withdrawBtn.addEventListener('click', function() {
+                    const amount = parseFloat(withdrawAmountInput.value) || 0;
+                    
+                    if (amount < 50) {
+                        alert('Minimum withdrawal amount is R50');
+                        return;
+                    }
+                    
+                    const currentUser = getCurrentUserData();
+                    if (!currentUser) {
+                        alert('Please log in to withdraw');
+                        return;
+                    }
+                    
+                    if (currentUser.accumulatedIncome < amount) {
+                        alert('Insufficient accumulated income');
+                        return;
+                    }
+                    
+                    const fee = amount * 0.1; // 10% fee
+                    const receive = amount - fee;
+                    
+                    // Redirect to WhatsApp with withdrawal details
+                    const message = `Withdrawal Request:\nAmount: R${amount.toFixed(2)}\nFee: R${fee.toFixed(2)}\nTo Receive: R${receive.toFixed(2)}\nAccount: ${currentUser.phone}`;
+                    const whatsappUrl = `https://wa.me/27631287462?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                    
+                    // Deduct from accumulated income
+                    updateUserData(currentUser.phone, {
+                        accumulatedIncome: currentUser.accumulatedIncome - amount
+                    });
+                    
+                    // Update UI
+                    document.getElementById('accumulated-income').textContent = `R${(currentUser.accumulatedIncome - amount).toFixed(2)}`;
+                    
+                    showNotification('Withdrawal request sent! Please check WhatsApp for confirmation.', 'success');
+                    
+                    // Reset form
+                    withdrawAmountInput.value = '';
+                    withdrawReceive.textContent = 'R0.00';
+                });
+            }
+            
+            // Change password functionality
+            const changePasswordBtn = document.getElementById('change-password-btn');
+            if (changePasswordBtn) {
+                changePasswordBtn.addEventListener('click', function() {
+                    const currentPassword = document.getElementById('current-password').value;
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmNewPassword = document.getElementById('confirm-new-password').value;
+                    
+                    if (!currentPassword || !newPassword || !confirmNewPassword) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmNewPassword) {
+                        alert('New passwords do not match');
+                        return;
+                    }
+                    
+                    if (!validatePassword(newPassword)) {
+                        alert('New password must be at least 8 characters with uppercase, lowercase, and number');
+                        return;
+                    }
+                    
+                    const currentUser = getCurrentUserData();
+                    if (!currentUser) {
+                        alert('Please log in to change password');
+                        return;
+                    }
+                    
+                    if (currentUser.password !== currentPassword) {
+                        alert('Current password is incorrect');
+                        return;
+                    }
+                    
+                    // Update password
+                    updateUserData(currentUser.phone, { password: newPassword });
+                    
+                    // Clear form
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-new-password').value = '';
+                    
+                    showNotification('Password changed successfully!', 'success');
+                });
+            }
+            
+            // Bind bank account functionality
+            const bindBankBtn = document.getElementById('bind-bank-btn');
+            if (bindBankBtn) {
+                bindBankBtn.addEventListener('click', function() {
+                    const accountName = document.getElementById('account-name').value;
+                    const bankName = document.getElementById('bank-name').value;
+                    const accountNumber = document.getElementById('account-number').value;
+                    
+                    if (!accountName || !bankName || !accountNumber) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+                    
+                    const currentUser = getCurrentUserData();
+                    if (!currentUser) {
+                        alert('Please log in to bind bank account');
+                        return;
+                    }
+                    
+                    // Update user data with bank details
+                    updateUserData(currentUser.phone, {
+                        bankAccount: {
+                            name: accountName,
+                            bank: bankName,
+                            accountNumber: accountNumber
+                        }
+                    });
+                    
+                    // Clear form
+                    document.getElementById('account-name').value = '';
+                    document.getElementById('bank-name').value = '';
+                    document.getElementById('account-number').value = '';
+                    
+                    showNotification('Bank account bound successfully!', 'success');
+                });
+            }
+            
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to logout?')) {
+                        showLogin();
+                    }
+                });
+            }
+            
+            // Countdown timer for orders
+            function updateCountdown() {
+                const countdownElements = document.querySelectorAll('.countdown-timer');
+                if (countdownElements.length > 0) {
+                    // For demo purposes, we'll use a fixed countdown
+                    // In a real app, this would calculate based on the actual next payment time
+                    const now = new Date();
+                    const nextPayment = new Date(now);
+                    nextPayment.setHours(24, 0, 0, 0); // Next payment at midnight
+                    
+                    const diff = nextPayment - now;
+                    
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    countdownElements.forEach(element => {
+                        if (element.textContent !== 'Awaiting Approval') {
+                            element.textContent = 
+                                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        }
+                    });
+                }
+            }
+            
+            // Update countdown every second
+            setInterval(updateCountdown, 1000);
+            updateCountdown(); // Initial call
+            
+            // Check URL for referral code
+            function checkUrlForReferral() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const refCode = urlParams.get('ref');
+                if (refCode) {
+                    document.getElementById('invitation-code').value = refCode;
+                }
+            }
+            
+            checkUrlForReferral();
+        });
+    </script>
+</body>
+</html>
